@@ -1,7 +1,9 @@
+// Grounding file represents a reference document used by AI in generating answers
+// This is the frontend representation of a document chunk from Azure AI Search
 export type GroundingFile = {
-    id: string;
-    name: string;
-    content: string;
+    id: string;        // Unique identifier (maps to chunk_id from backend)
+    name: string;      // Document title (maps to title from backend)
+    content: string;   // Document content/chunk (maps to chunk from backend)
 };
 
 export type HistoryItem = {
@@ -69,6 +71,8 @@ export type ExtensionMiddleTierToolResponse = {
     tool_result: string; // JSON string that needs to be parsed into ToolResult
 };
 
+// Tool result from backend's report_grounding tool
+// Contains the raw data structure sent from Python backend
 export type ToolResult = {
     sources: { chunk_id: string; title: string; chunk: string }[];
 };

@@ -80,10 +80,33 @@ KEY_PATTERN = re.compile(r'^[a-zA-Z0-9_=\-]+$')
 # TODO: move from sending all chunks used for grounding eagerly to only sending links to 
 # the original content in storage, it'll be more efficient overall
 async def _report_grounding_tool(search_client: SearchClient, identifier_field: str, title_field: str, content_field: str, args: Any) -> None:
+    """
+    Report grounding sources used by AI in generating the answer.
+    This function retrieves detailed information about the knowledge base chunks 
+    that were referenced by the AI, and sends them to the frontend for display.
+    
+    Args:
+        search_client: Azure AI Search client for retrieving document details
+        identifier_field: Field name for chunk ID (default: "chunk_id")
+        title_field: Field name for document title (default: "title")
+        content_field: Field name for chunk content (default: "chunk")
+        args: Arguments from AI containing "sources" list with chunk IDs
+    
+    Returns:
+        ToolResult with sources data sent to client (frontend) for display
+    
+    Flow:
+        1. Filter source IDs for security (alphanumeric only)
+        2. Search Azure AI Search to get full details (title, content) for each source
+        3. Package results as {chunk_id, title, chunk} objects
+        4. Send to frontend via ToolResult with TO_CLIENT direction
+    """
+    # Step 1: Filter sources for security - only allow alphanumeric IDs
     sources = [s for s in args["sources"] if KEY_PATTERN.match(s)]
     list = " OR ".join(sources)
     print(f"Grounding source: {list}")
-    # Use search instead of filter to align with how detailt integrated vectorization indexes
+    
+    # Step 2: Use search instead of filter to align with how detailt integrated vectorization indexes
     # are generated, where chunk_id is searchable with a keyword tokenizer, not filterable 
     search_results = await search_client.search(search_text=list, 
                                                 search_fields=[identifier_field], 
@@ -95,9 +118,12 @@ async def _report_grounding_tool(search_client: SearchClient, identifier_field: 
     # use a filter instead (and you can remove the regex check above, just ensure you escape single quotes)
     # search_results = await search_client.search(filter=f"search.in(chunk_id, '{list}')", select=["chunk_id", "title", "chunk"])
 
+    # Step 3: Package search results into document objects
     docs = []
     async for r in search_results:
         docs.append({"chunk_id": r[identifier_field], "title": r[title_field], "chunk": r[content_field]})
+    
+    # Step 4: Send to frontend - TO_CLIENT direction ensures frontend receives this data
     return ToolResult({"sources": docs}, ToolResultDirection.TO_CLIENT)
 
 def attach_rag_tools(rtmt: RTMiddleTier,

@@ -32,12 +32,21 @@ function App() {
             stopAudioPlayer();
         },
         onReceivedExtensionMiddleTierToolResponse: message => {
+            // Handle tool responses from backend (e.g., report_grounding results)
+            // This callback is triggered when the backend sends grounding sources data
+            
+            // Step 1: Parse the JSON string from backend into ToolResult object
             const result: ToolResult = JSON.parse(message.tool_result);
 
+            // Step 2: Transform backend data structure to frontend GroundingFile format
+            // Backend sends: {chunk_id, title, chunk}
+            // Frontend expects: {id, name, content}
             const files: GroundingFile[] = result.sources.map(x => {
                 return { id: x.chunk_id, name: x.title, content: x.chunk };
             });
 
+            // Step 3: Add new grounding files to existing list (accumulative display)
+            // This ensures all referenced documents throughout the conversation are shown
             setGroundingFiles(prev => [...prev, ...files]);
         }
     });

@@ -32,6 +32,7 @@ export function GroundingFiles({ files, onSelected }: Properties) {
     const { t } = useTranslation();
     const isAnimating = useRef(false);
 
+    // Don't render anything if no grounding files are available
     if (files.length === 0) {
         return null;
     }
@@ -43,6 +44,7 @@ export function GroundingFiles({ files, onSelected }: Properties) {
                 <CardDescription>{t("groundingFiles.description")}</CardDescription>
             </CardHeader>
             <CardContent>
+                {/* AnimatePresence enables exit animations when files are removed */}
                 <AnimatePresence>
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
@@ -53,6 +55,7 @@ export function GroundingFiles({ files, onSelected }: Properties) {
                         onLayoutAnimationStart={() => (isAnimating.current = true)}
                         onLayoutAnimationComplete={() => (isAnimating.current = false)}
                     >
+                        {/* Display grounding files as clickable buttons with staggered animation */}
                         <div className="flex flex-wrap gap-2">
                             {files.map((file, index) => (
                                 <motion.div key={index} variants={variants} initial="hidden" animate="visible" custom={index}>

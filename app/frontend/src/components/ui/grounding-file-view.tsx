@@ -12,6 +12,7 @@ type Properties = {
 export default function GroundingFileView({ groundingFile, onClosed }: Properties) {
     return (
         <AnimatePresence>
+            {/* Only render modal when a grounding file is selected */}
             {groundingFile && (
                 <motion.div
                     initial={{ opacity: 0 }}
@@ -20,6 +21,7 @@ export default function GroundingFileView({ groundingFile, onClosed }: Propertie
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
                     onClick={() => onClosed()}
                 >
+                    {/* Modal content - shows full document details */}
                     <motion.div
                         initial={{ scale: 0.9, y: 20 }}
                         animate={{ scale: 1, y: 0 }}
@@ -27,6 +29,7 @@ export default function GroundingFileView({ groundingFile, onClosed }: Propertie
                         className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-lg bg-white p-6"
                         onClick={e => e.stopPropagation()}
                     >
+                        {/* Header with document title and close button */}
                         <div className="mb-4 flex items-center justify-between">
                             <h2 className="text-xl font-bold">{groundingFile.name}</h2>
                             <Button
@@ -39,6 +42,7 @@ export default function GroundingFileView({ groundingFile, onClosed }: Propertie
                                 <X className="h-5 w-5" />
                             </Button>
                         </div>
+                        {/* Document content display area with scroll */}
                         <div className="flex-grow overflow-hidden">
                             <pre className="h-[40vh] overflow-auto text-wrap rounded-md bg-gray-100 p-4 text-sm">
                                 <code>{groundingFile.content}</code>
